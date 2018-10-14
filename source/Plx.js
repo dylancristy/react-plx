@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import BezierEasing from 'bezier-easing';
-// import ScrollManager from 'window-scroll-manager';
 
 // Check if code is running in the browser (important for universal rendering)
 const WINDOW_EXISTS = typeof window !== 'undefined';
