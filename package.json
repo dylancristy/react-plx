@@ -9,6 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server",
     "build": "rm -rf ./lib && NODE_ENV=\"production\" babel ./source --out-dir ./lib",
+    "build-win": "rmdir /s /q .\\lib 2>nul & mkdir .\\lib & SET NODE_ENV=\"production\" & .\\node_modules\\.bin\\babel .\\source --out-dir .\\lib",
     "build-docs": "rm -rf ./dist-docs && EXAMPLE=\"true\" NODE_ENV=\"production\" webpack",
     "publish-to-npm": "npm run build && npm publish",
     "publish-docs": "sh publish-docs.sh",
@@ -51,6 +52,7 @@
   "dependencies": {
     "bezier-easing": "^2.1.0",
     "prop-types": "^15.6.1",
+    "styled-components": "^3.4.10",
     "window-scroll-manager": "^1.1.1"
   },
   "peerDependencies": {
