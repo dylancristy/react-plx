@@ -1,4 +1,4 @@
-import ScrollManager from 'window-scroll-manager';
+import ScrollManager from './ScrollManager';
 import Plx from './Plx';
 
 export default Plx;

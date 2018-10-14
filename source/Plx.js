@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import BezierEasing from 'bezier-easing';
-import ScrollManager from 'window-scroll-manager';
 
 // Check if code is running in the browser (important for universal rendering)
 const WINDOW_EXISTS = typeof window !== 'undefined';
@@ -164,6 +163,7 @@ const PROPS_TO_OMIT = [
   'children',
   'className',
   'freeze',
+  'managerId',
   'parallaxData',
   'style',
   'tagName',
@@ -716,22 +716,25 @@ export default class Plx extends Component {
     // Binding handlers
     this.handleScrollChange = this.handleScrollChange.bind(this);
     this.handleResize = this.handleResize.bind(this);
+    this.handleManagerReady = this.handleManagerReady.bind(this);
 
     this.state = {
       element: null,
       showElement: false,
       plxStateClasses: '',
       plxStyle: {},
+      managerReady: false,
     };
+
+    this.SCROLL_EVENT = `${ props.managerId }-scroll`;
+    this.READY_EVENT = `${ props.managerId }-ready`;
   }
 
   componentDidMount() {
-    // Get scroll manager singleton
-    this.scrollManager = new ScrollManager();
     // Add listeners
-    window.addEventListener('window-scroll', this.handleScrollChange);
+    window.addEventListener(this.SCROLL_EVENT, this.handleScrollChange);
     window.addEventListener('resize', this.handleResize);
-
+    window.addEventListener(this.READY_EVENT, this.handleManagerReady);
     this.update();
   }
 
@@ -742,24 +745,30 @@ export default class Plx extends Component {
   }
 
   componentWillUnmount() {
-    const {
-      scrollManager,
-    } = this.state;
-
-    window.removeEventListener('window-scroll', this.handleScrollChange);
+    window.removeEventListener(this.SCROLL_EVENT, this.handleScrollChange);
     window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener(this.READY_EVENT, this.handleManagerReady);
 
     clearTimeout(this.resizeDebounceTimeoutID);
     this.resizeDebounceTimeoutID = null;
+  }
 
-    if (scrollManager) {
-      scrollManager.removeListener();
-    }
+  handleManagerReady(e) {
+    // receive the refernce to the scroll manager getScrollPosition function
+    // sent with the manager ready event
+    this.getScrollPosition = e.getScrollPosition;
+    this.setState({
+      managerReady: true,
+    });
   }
 
   update(scrollPosition = null) {
-    const currentScrollPosition = scrollPosition === null ?
-      this.scrollManager.getScrollPosition().scrollPositionY : scrollPosition;
+    let currentScrollPosition = 0;
+
+    if (this.state.managerReady) {
+      currentScrollPosition = scrollPosition === null ?
+        this.getScrollPosition().scrollPositionY : scrollPosition;
+    }
 
     const newState = getNewState(
       currentScrollPosition,
@@ -885,6 +894,7 @@ Plx.propTypes = {
   className: PropTypes.string,
   disabled: PropTypes.bool,
   freeze: PropTypes.bool,
+  managerId: PropTypes.string.isRequired,
   parallaxData: PropTypes.arrayOf(parallaxDataType),
   style: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.object])),
   tagName: PropTypes.string,
